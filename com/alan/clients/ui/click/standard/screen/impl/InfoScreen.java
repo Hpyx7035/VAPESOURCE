@@ -63,7 +63,7 @@ public class InfoScreen extends Screen {
     // Returns the first column of the credits.
     // Method so I can hotswap the string
     private static String getCredits1() {
-        return "Rise " + Client.VERSION + " (riseclient.com)\n" +
+        return "Rise " + Client.VERSION + " (java.lang.NullPointerException)\n" +
                 "\n" +
                 "Designed and built by Alan and Hazsi.\n" +
                 "\n" +

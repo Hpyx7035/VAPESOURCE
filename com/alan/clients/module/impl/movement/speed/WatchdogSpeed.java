@@ -107,7 +107,7 @@ public class WatchdogSpeed extends Mode<Speed> {
                     angle = MoveUtil.simulationStrafeAngle(angle, 360);
                 }
 
-                PacketUtil.send(new C07PacketPlayerDigging(C07PacketPlayerDigging.Action.STOP_DESTROY_BLOCK, new BlockPos(mc.thePlayer), EnumFacing.UP));
+//                PacketUtil.send(new C07PacketPlayerDigging(C07PacketPlayerDigging.Action.STOP_DESTROY_BLOCK, new BlockPos(mc.thePlayer), EnumFacing.UP));
 
                 if (mc.thePlayer.ticksSinceVelocity > 20) {
                     switch (mc.thePlayer.offGroundTicks) {

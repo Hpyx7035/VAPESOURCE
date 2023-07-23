@@ -58,6 +58,7 @@ public class AltDisplay extends MenuComponent {
             // Colors for rendering
             final Font fontRenderer = FontManager.getProductSansRegular(20);
             final Color fontColor = ColorUtil.withAlpha(Color.WHITE, (int) (200 + this.hoverAnimation.getValue()));
+            final Color fontColor2 = ColorUtil.withAlpha(Color.GRAY, (int) (200 + this.hoverAnimation.getValue()));
 
             // Render background
             RenderUtil.roundedRectangle(this.getX(), this.getY() + offset, this.getWidth(), this.getHeight(), 5, ColorUtil.withAlpha(Color.WHITE, 30 + (int) this.hoverAnimation.getValue() / 10));
@@ -72,7 +73,7 @@ public class AltDisplay extends MenuComponent {
             // Renders information
             renderHead(this.getX() + 8, this.getY() + offset + 4, 24);
             fontRenderer.drawStringWithShadow(this.account.getEmail(), this.getX() + 40, this.getY() + offset + this.getHeight() / 2.0F - 10, fontColor.getRGB());
-            fontRenderer.drawStringWithShadow(this.account.getPassword().replaceAll(".", "*"), this.getX() + 40, this.getY() + offset + this.getHeight() / 2.0F + 2, fontColor.getRGB());
+            fontRenderer.drawStringWithShadow(this.account.getPassword().equalsIgnoreCase("Offline") ? "Offline" : this.account.getPassword().replaceAll(".", "*"), this.getX() + 40, this.getY() + offset + this.getHeight() / 2.0F + 2, this.account.getPassword().equalsIgnoreCase("Offline") ? fontColor2.getRGB() : fontColor.getRGB());
 
             // Renders delete button
             int size = 12;

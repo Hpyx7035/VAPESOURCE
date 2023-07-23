@@ -679,7 +679,9 @@ public final class KillAura extends Module {
                 if (target != null && ((mc.thePlayer.getDistanceToEntity(target) < this.range.getValue().doubleValue() && !rayCast.getValue() ||
                         (rayCast.getValue() && mc.objectMouseOver != null && mc.objectMouseOver.entityHit == target))) || (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == MovingObjectPosition.MovingObjectType.ENTITY) && !this.blocking) {
                     if (this.getModule(Debugger.class).isEnabled()) ChatUtil.display(EnumChatFormatting.LIGHT_PURPLE + " Block.");
-                    this.block(true, true);
+                    this.block(true, false);
+                } else if (hitTicks == 1 && this.blocking) {
+                    this.unblock(true);
                 }
 
                 break;
@@ -724,9 +726,6 @@ public final class KillAura extends Module {
                     PacketUtil.send(new C09PacketHeldItemChange(SlotComponent.getItemIndex() % 8 + 1));
                     PacketUtil.send(new C09PacketHeldItemChange(SlotComponent.getItemIndex()));
                 }
-                break;
-            case "Watchdog":
-                this.unblock(true);
                 break;
         }
     }

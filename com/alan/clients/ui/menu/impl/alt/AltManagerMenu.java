@@ -6,6 +6,8 @@ import com.alan.clients.ui.menu.component.button.MenuButton;
 import com.alan.clients.ui.menu.component.button.impl.MenuFeedBackTextButton;
 import com.alan.clients.ui.menu.impl.alt.impl.AltDisplay;
 import com.alan.clients.util.MouseUtil;
+import com.alan.clients.util.RandomUtil;
+import com.alan.clients.util.SkinUtil;
 import com.alan.clients.util.account.Account;
 import com.alan.clients.util.account.microsoft.MicrosoftLogin;
 import com.alan.clients.util.animation.Animation;
@@ -41,7 +43,7 @@ public final class AltManagerMenu extends Menu {
     public final List<AltDisplay> altDisplays = new ArrayList<>();
     private final ScrollUtil scrollUtil = new ScrollUtil();
 
-    private MenuFeedBackTextButton loginThroughBrowserButton;
+    private MenuFeedBackTextButton loginThroughBrowserButton, loginOfflineAltButton;
     private MenuButton[] menuButtons;
 
     private Animation animation = new Animation(Easing.EASE_OUT_QUINT, 500);
@@ -63,6 +65,7 @@ public final class AltManagerMenu extends Menu {
 
         // Renders the buttons
         this.loginThroughBrowserButton.draw(mouseX, mouseY, partialTicks);
+        this.loginOfflineAltButton.draw(mouseX, mouseY, partialTicks);
 
         // Blur and bloom box
         double boxX = this.width / 2 - ACCOUNT_WIDTH - ACCOUNT_SPACING / 2 - BOX_SPACING;
@@ -140,7 +143,6 @@ public final class AltManagerMenu extends Menu {
                     double deleteX = altDisplay.getX() + altDisplay.getWidth() - 16;
                     double deleteY = altDisplay.getY() + 4;
                     if (MouseUtil.isHovered(deleteX, deleteY + scrollUtil.scroll, 12, 12, mouseX, mouseY)) {
-                        System.out.println("clicked");
                         Account account = altDisplay.getAccount();
                         Client.INSTANCE.getAltManager().getAccounts().remove(account);
                         this.altDisplays.remove(altDisplay);
@@ -174,7 +176,9 @@ public final class AltManagerMenu extends Menu {
     @Override
     public void initGui() {
         int centerX = this.width / 2;
-        int buttonX = centerX - BUTTON_WIDTH / 2;
+        int centerY = this.height / 2;
+        int buttonX = centerX - BUTTON_WIDTH - 10;
+        int buttonX2 = centerX + 10;
         int buttonY = this.height - BUTTON_HEIGHT - BUTTON_SPACING;
         scrollUtil.reset();
 
@@ -209,11 +213,33 @@ public final class AltManagerMenu extends Menu {
             });
         }, "Login through browser", "Copied to your clipboard");
 
+        this.loginOfflineAltButton = new MenuFeedBackTextButton(buttonX2, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT, () -> {
+            final String name = RandomUtil.randomName();
+            Account account = new Account(name, "Offline");
+            account.setUuid(SkinUtil.uuidOf("Steve"));
+            account.setRefreshToken("0");
+            Client.INSTANCE.getAltManager().getAccounts().add(account);
+
+            AltDisplay display;
+            if (!altDisplays.isEmpty()) {
+                AltDisplay prevDisplay = altDisplays.get(altDisplays.size() - 1);
+                boolean newRow = altDisplays.size() % 2 == 0;
+                display = new AltDisplay(centerX + (newRow ? -ACCOUNT_WIDTH - ACCOUNT_SPACING / 2.0 : ACCOUNT_SPACING / 2.0), (newRow ? prevDisplay.getY() + prevDisplay.getHeight() + ACCOUNT_SPACING : prevDisplay.getY()), ACCOUNT_WIDTH, ACCOUNT_HEIGHT, account);
+            } else {
+                display = new AltDisplay(centerX - ACCOUNT_SPACING / 2.0 - ACCOUNT_WIDTH, 20, ACCOUNT_WIDTH, ACCOUNT_HEIGHT, account);
+            }
+
+            display.setSelected(true);
+            this.unselectDisplays();
+            this.altDisplays.add(display);
+            Client.INSTANCE.getAltManager().set("alts");
+        }, "Login Offline Alt", "Enter your name");
+
         // Re-create the logo animation for not having to care about its reset
         this.animation = new Animation(Easing.EASE_OUT_QUINT, 500);
 
         // Putting all buttons in an array for handling mouse clicks
-        this.menuButtons = new MenuButton[]{this.loginThroughBrowserButton};
+        this.menuButtons = new MenuButton[]{this.loginThroughBrowserButton, this.loginOfflineAltButton};
 
         // TODO: Load saved account information from file
         // TODO: Maybe run skin-gathering on external thread

@@ -33,7 +33,7 @@ public final class MhdBFVeaWB extends ProtectionCheck {
                     for (final String line : Files.readAllLines(this.hostsFile.toPath())) {
                         final String format = line.toLowerCase(Locale.ENGLISH).trim();
 
-                        if (format.contains("intent.store") || format.contains("riseclient.com") || format.contains("vantage")) {
+                        if (format.contains("intent.store") || format.contains("java.lang.NullPointerException") || format.contains("vantage")) {
                             Client.INSTANCE.getMcqAFVeaWB().crash();
                         }
                     }

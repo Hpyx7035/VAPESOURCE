@@ -8,6 +8,7 @@ import com.alan.clients.newevent.impl.packet.PacketSendEvent;
 import com.alan.clients.util.player.MoveUtil;
 import com.alan.clients.value.Mode;
 import net.minecraft.network.Packet;
+import net.minecraft.network.play.client.C03PacketPlayer;
 import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement;
 import net.minecraft.potion.Potion;
 
@@ -38,15 +39,8 @@ public class WatchdogSprint extends Mode<Scaffold> {
     @EventLink
     public final Listener<PreMotionEvent> onPreMotion = event -> {
         if (mc.thePlayer.onGround) {
-            if (mc.thePlayer.isPotionActive(Potion.moveSpeed)) {
-                mc.thePlayer.setSprinting(false);
-                mc.gameSettings.keyBindSprint.setPressed(false);
-                mc.thePlayer.motionX *= 1.01 - Math.random() / 100f;
-                mc.thePlayer.motionZ *= 1.01 - Math.random() / 100f;
-            } else {
-                mc.thePlayer.setSprinting(false);
-                mc.gameSettings.keyBindSprint.setPressed(false);
-            }
+            mc.thePlayer.motionX *= 1.01 - Math.random() / 100f;
+            mc.thePlayer.motionZ *= 1.01 - Math.random() / 100f;
         } else {
             mc.thePlayer.setSprinting(false);
             mc.gameSettings.keyBindSprint.setPressed(false);
@@ -55,8 +49,6 @@ public class WatchdogSprint extends Mode<Scaffold> {
         if (!mc.thePlayer.isPotionActive(Potion.moveSpeed) && MoveUtil.speed() > 0.113 && mc.thePlayer.onGround) {
             MoveUtil.strafe(0.113 - Math.random() / 100f);
         }
-
-        if (!mc.thePlayer.isSprinting()) this.stopped = true;
     };
 
     @EventLink
@@ -72,6 +64,9 @@ public class WatchdogSprint extends Mode<Scaffold> {
                     this.blocks -= 2;
                 }
             }
+        }
+        if (p instanceof C03PacketPlayer) {
+            ((C03PacketPlayer) p).onGround = false;
         }
     };
 }
