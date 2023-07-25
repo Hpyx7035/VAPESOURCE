@@ -32,6 +32,7 @@ import com.alan.clients.newevent.impl.packet.PacketSendEvent;
 import com.alan.clients.newevent.impl.render.MouseOverEvent;
 import com.alan.clients.newevent.impl.render.Render2DEvent;
 import com.alan.clients.newevent.impl.render.RenderItemEvent;
+import com.alan.clients.util.RandomUtil;
 import com.alan.clients.util.RayCastUtil;
 import com.alan.clients.util.chat.ChatUtil;
 import com.alan.clients.util.math.MathUtil;
@@ -73,6 +74,8 @@ public final class KillAura extends Module {
             .add(new SubMode("Switch"))
             .add(new SubMode("Multiple"))
             .setDefault("Single");
+
+    private final BoundsNumberValue switchTicks = new BoundsNumberValue("Switch Ticks", this, 100, 1000, 0, 2000, 1);
 
     private final ModeValue autoBlock = new ModeValue("Auto Block", this)
             .add(new SubMode("None"))
@@ -141,6 +144,7 @@ public final class KillAura extends Module {
 
     private float randomYaw, randomPitch, angle;
     private boolean blocking, swing, allowAttack;
+
     private long nextSwing;
 
     public static List<Entity> targets;
@@ -148,6 +152,7 @@ public final class KillAura extends Module {
     public Entity target;
 
     public StopWatch subTicksStopWatch = new StopWatch();
+    public StopWatch switchChangeTicks = new StopWatch();
     private int attack, hitTicks, expandRange;
 
 
@@ -176,6 +181,7 @@ public final class KillAura extends Module {
     @Override
     protected void onEnable() {
         this.attack = 0;
+        this.switchChangeTicks.reset();
     }
 
     @Override
@@ -502,6 +508,37 @@ public final class KillAura extends Module {
                             break;
                         }
 
+                        case "Switch": {
+                            if (this.switchChangeTicks.finished(RandomUtil.nextInt(switchTicks.getMin().intValue(), switchTicks.getMax().intValue())) && targets.size() > 1) {
+                                if (targets.contains(target)) {
+                                    targets.remove(target);
+                                    Entity oldTarget = target;
+                                    target = targets.get(0);
+                                    targets.add(oldTarget);
+                                } else {
+                                    target = targets.get(0);
+                                }
+                                this.switchChangeTicks.reset();
+                            }
+                            if (target == null) return;
+                            if ((mc.thePlayer.getDistanceToEntity(target) <= range && !rayCast.getValue()) ||
+                                    (rayCast.getValue() && movingObjectPosition != null && movingObjectPosition.entityHit == target)) {
+                                this.attack(target);
+                            } else if (movingObjectPosition != null && movingObjectPosition.typeOfHit == MovingObjectPosition.MovingObjectType.ENTITY) {
+                                this.attack(movingObjectPosition.entityHit);
+                            } else {
+                                switch (clickMode.getValue().getName()) {
+                                    case "Normal":
+                                    case "Hit Select":
+                                        PacketUtil.send(new C0APacketAnimation());
+                                        this.clickStopWatch.reset();
+                                        this.hitTicks = 0;
+                                        break;
+                                }
+                            }
+                            break;
+                        }
+
                         case "Multiple": {
                             targets.removeIf(target -> mc.thePlayer.getDistanceToEntity(target) > range);
 
@@ -588,10 +625,6 @@ public final class KillAura extends Module {
             swing = true;
         } else if (packet instanceof C03PacketPlayer) {
             swing = false;
-        }
-
-        if ((packet instanceof C0APacketAnimation || packet instanceof C02PacketUseEntity) &&
-                this.mode.getValue().getName().equals("1.9+ (1.8 Visuals)")) {
         }
 
         this.packetBlock(event);
